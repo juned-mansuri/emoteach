@@ -3,7 +3,11 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import * as faceapi from 'face-api.js'
 
-export default function  WebcamFeed() {
+interface WebcamFeedProps {
+  onEmotionChange?: (emotion: string | null, confidence: number) => void
+}
+
+export default function WebcamFeed({ onEmotionChange }: WebcamFeedProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [isActive, setIsActive] = useState(false)
@@ -19,6 +23,20 @@ export default function  WebcamFeed() {
   const addLog = (message: string) => {
     console.log(message)
     setDebugLog(prev => [...prev.slice(-4), `${new Date().toLocaleTimeString()}: ${message}`])
+  }
+
+  const getEmotionEmoji = (emotion: string | null) => {
+    if (!emotion) return '😐'
+    switch (emotion.toLowerCase()) {
+      case 'happy': return '😊'
+      case 'sad': return '😢'
+      case 'angry': return '😠'
+      case 'fearful': return '😨'
+      case 'disgusted': return '🤢'
+      case 'surprised': return '😲'
+      case 'neutral': return '😐'
+      default: return '🤔'
+    }
   }
 
   const getDevices = useCallback(async () => {
@@ -150,14 +168,24 @@ export default function  WebcamFeed() {
         setEmotion(dominantEmotion)
         setEmotionConfidence(Math.round(confidence * 100))
         addLog(`Emotion: ${dominantEmotion} (${Math.round(confidence * 100)}%)`)
+        
+        // Call the callback to notify parent component
+        if (onEmotionChange) {
+          onEmotionChange(dominantEmotion, Math.round(confidence * 100))
+        }
       } else {
         setEmotion(null)
         setEmotionConfidence(0)
+        
+        // Call the callback with null emotion
+        if (onEmotionChange) {
+          onEmotionChange(null, 0)
+        }
       }
     } catch (err) {
       addLog('Emotion analysis error: ' + (err as Error).message)
     }
-  }, [modelsLoaded, isActive])
+  }, [modelsLoaded, isActive, onEmotionChange])
 
   // Reload device list on mount
   useEffect(() => {
@@ -196,143 +224,181 @@ export default function  WebcamFeed() {
   }, [isActive, modelsLoaded, analyzeEmotions])
 
   return (
-    <div className="w-80 bg-white rounded-lg shadow-sm border p-4 space-y-4">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-800">Webcam Test</h2>
-        <p className="text-xs text-gray-500 mt-1">Testing webcam before emotion detection</p>
-      </div>
-
-      {/* Camera Selection */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">Camera:</label>
-        <div className="flex gap-1">
-          <select
-            value={selectedDeviceId}
-            onChange={(e) => setSelectedDeviceId(e.target.value)}
-            disabled={isActive}
-            className="flex-1 text-xs border rounded px-2 py-1 bg-gray-600 disabled:bg-gray-100"
-          >
-            {devices.map(device => (
-              <option key={device.deviceId} value={device.deviceId}>
-                {device.label || `Camera ${device.deviceId.slice(0, 8)}`}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={getDevices}
-            className="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded border hover:bg-blue-100"
-          >
-            Refresh
-          </button>
+      <div className="bg-gray-50 border-b border-gray-200 p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <span className="text-blue-600">📹</span>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Emotion Detection</h2>
+            <p className="text-sm text-gray-600">AI-powered facial analysis</p>
+          </div>
         </div>
       </div>
 
-      {/* Error Display */}
-      {error && (
-        <div className="text-xs bg-red-50 text-red-600 p-2 rounded border border-red-200">
-          {error}
+      <div className="p-4 space-y-4">
+        {/* Camera Selection */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">Camera Device</label>
+          <div className="flex gap-2">
+            <select
+              value={selectedDeviceId}
+              onChange={(e) => setSelectedDeviceId(e.target.value)}
+              disabled={isActive}
+              className="flex-1 text-sm text-black bg-white border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-500"
+              style={{ color: 'black', backgroundColor: 'white' }}
+            >
+              {devices.map(device => (
+                <option 
+                  key={device.deviceId} 
+                  value={device.deviceId}
+                  className="text-black bg-white py-2"
+                  style={{ color: 'black', backgroundColor: 'white' }}
+                >
+                  {device.label || `Camera ${device.deviceId.slice(0, 8)}`}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={getDevices}
+              className="text-sm px-3 py-2 bg-gray-100 text-gray-700 rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
-      )}
 
-      {/* Emotion Detection Status */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-medium text-gray-700">Emotion Detection:</span>
-          <span className={`px-2 py-1 rounded text-xs ${modelsLoaded ? 'bg-green-50 text-green-600' : 'bg-yellow-50 text-yellow-600'}`}>
-            {modelsLoaded ? 'Ready' : 'Loading models...'}
-          </span>
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-start gap-2">
+              <span className="text-red-500 mt-0.5">⚠️</span>
+              <div>
+                <p className="text-sm font-medium text-red-800">Camera Error</p>
+                <p className="text-xs text-red-600">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Emotion Detection Status */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Detection Status</span>
+            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+              modelsLoaded ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+            }`}>
+              {modelsLoaded ? 'Ready' : 'Loading...'}
+            </span>
+          </div>
+          
+          {/* Permanent Emotion Display */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{emotion ? getEmotionEmoji(emotion) : '🤔'}</span>
+                <div>
+                  <p className="text-sm font-medium text-blue-900">{emotion || 'Detecting...'}</p>
+                  <p className="text-xs text-blue-600">
+                    {emotion ? `${emotionConfidence}% confidence` : 'Please look at camera'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        {emotion && (
-          <div className="bg-blue-50 text-blue-700 p-2 rounded border border-blue-200">
-            <div className="text-sm font-medium">Detected: {emotion}</div>
-            <div className="text-xs">Confidence: {emotionConfidence}%</div>
-          </div>
-        )}
-      </div>
 
-      {/* Video Display */}
-      <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-full object-cover transform scale-x-[-1]"
-        />
-        {!isActive && !isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
-            <div className="text-2xl mb-2">📹</div>
-            <div className="text-xs">Click Start to test webcam</div>
-          </div>
-        )}
-        {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
-            <div className="text-2xl mb-2">⏳</div>
-            <div className="text-xs">Loading...</div>
-          </div>
-        )}
-        {isActive && (
-          <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            LIVE
-          </div>
-        )}
-      </div>
-
-      {/* Controls */}
-      <div className="flex gap-2">
-        {!isActive ? (
-          <button
-            onClick={startWebcam}
-            disabled={isLoading}
-            className="flex-1 py-2 px-3 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Starting...' : 'Start Webcam'}
-          </button>
-        ) : (
-          <button
-            onClick={stopWebcam}
-            className="flex-1 py-2 px-3 text-sm bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Stop Webcam
-          </button>
-        )}
-
-        <button
-          onClick={checkPermissions}
-          className="px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Check
-        </button>
-      </div>
-
-      {/* Debug Log */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-medium text-gray-700">Debug Log</h3>
-          <button
-            onClick={() => setDebugLog([])}
-            className="text-xs px-2 py-1 text-gray-500 hover:text-gray-700"
-          >
-            Clear
-          </button>
-        </div>
-        <div className="bg-gray-50 rounded border p-2 h-20 overflow-y-auto">
-          {debugLog.length === 0 ? (
-            <div className="text-xs text-gray-400">Debug messages will appear here...</div>
-          ) : (
-            debugLog.map((log, i) => (
-              <div key={i} className="text-xs text-gray-600 font-mono">{log}</div>
-            ))
+        {/* Video Display */}
+        <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ aspectRatio: '4/3' }}>
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            className="w-full h-full object-cover transform scale-x-[-1]"
+          />
+          {!isActive && !isLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 bg-gray-50">
+              <div className="text-4xl mb-3">📹</div>
+              <div className="text-sm font-medium">Click start to begin</div>
+            </div>
+          )}
+          {isLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 bg-gray-50">
+              <div className="text-4xl mb-3">⏳</div>
+              <div className="text-sm font-medium">Starting camera...</div>
+            </div>
+          )}
+          {isActive && (
+            <div className="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
+              LIVE
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Status Info */}
-      <div className="text-xs text-gray-400 space-y-1 border-t pt-2">
-        <div>Browser: {navigator.userAgent}</div>
-        <div>HTTPS: {window.location.protocol === 'https:' ? 'Yes' : 'No'}</div>
+        {/* Controls */}
+        <div className="flex gap-2">
+          {!isActive ? (
+            <button
+              onClick={startWebcam}
+              disabled={isLoading}
+              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+            >
+              {isLoading ? 'Starting...' : 'Start Camera'}
+            </button>
+          ) : (
+            <button
+              onClick={stopWebcam}
+              className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors font-medium"
+            >
+              Stop Camera
+            </button>
+          )}
+
+          <button
+            onClick={checkPermissions}
+            className="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            Check Permissions
+          </button>
+        </div>
+
+        {/* Debug Log - Collapsible */}
+        <details className="group">
+          <summary className="flex items-center justify-between cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+            <span>Debug Information</span>
+            <span className="transform transition-transform group-open:rotate-180">▼</span>
+          </summary>
+          <div className="mt-3 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-gray-600">Debug Log</span>
+              <button
+                onClick={() => setDebugLog([])}
+                className="text-xs text-red-600 hover:text-red-800"
+              >
+                Clear
+              </button>
+            </div>
+            <div className="bg-gray-50 rounded border p-3 h-20 overflow-y-auto">
+              {debugLog.length === 0 ? (
+                <div className="text-xs text-gray-400">No debug messages</div>
+              ) : (
+                debugLog.map((log, i) => (
+                  <div key={i} className="text-xs text-gray-600 font-mono leading-relaxed">{log}</div>
+                ))
+              )}
+            </div>
+            
+            {/* System Info */}
+            <div className="text-xs text-gray-500 space-y-1 pt-2 border-t border-gray-200">
+              <div>Browser: {navigator.userAgent.split(' ')[0]}</div>
+              <div>HTTPS: {window.location.protocol === 'https:' ? 'Yes' : 'No'}</div>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
   )
