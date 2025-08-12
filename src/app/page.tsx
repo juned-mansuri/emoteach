@@ -1,103 +1,82 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import WebcamFeed from '@/components/WebcamFeed'
+import React, { useState } from 'react'
+// import LessonScreen from '@/components/LessonScreen'
+// import WebcamTest from '@/components/WebcamTest'
+
+// Sample lesson data with enhanced content for adaptive learning
+const sampleLesson = {
+  id: '1',
+  title: 'Introduction to Fractions',
+  content: `Let's explore fractions together! A fraction represents a part of a whole. Think of it like sharing a pizza 🍕 with your friends. 
+  
+  If you have a pizza cut into 4 equal slices and you eat 1 slice, you've eaten 1/4 (one-fourth) of the pizza. The number on top (1) is called the numerator - it tells us how many parts we have. The number on the bottom (4) is called the denominator - it tells us how many equal parts the whole is divided into.
+  
+  Fractions are everywhere in real life! When you're halfway through a movie, you've watched 1/2 of it. When you complete 3 out of 4 homework problems, you've done 3/4 of your work. Pretty cool, right?`,
+  
+  simplifiedContent: `Let's learn about fractions with something fun - pizza! 🍕
+  
+  Imagine you have a pizza cut into 4 pieces. If you eat 1 piece, you ate 1/4 of the pizza!
+  
+  The number on top (1) = how many pieces you have
+  The number on bottom (4) = how many pieces total
+  
+  That's it! Fractions just show parts of something whole. Like eating half an apple (1/2) or drinking a quarter of your juice (1/4)!`,
+  
+  hints: [
+    "Remember: The top number (numerator) shows how many parts you have 📊",
+    "The bottom number (denominator) shows how many parts make up the whole 🎯",
+    "Try thinking of fractions like pieces of your favorite snack or toy! 🍫",
+    "Practice with real objects around you - books, toys, or even cookies! 🍪"
+  ],
+  progress: 0
+}
+
+export default function Page() {
+  const [currentEmotion] = useState<'happy' | 'confused' | 'stressed' | 'focused' | 'excited' | 'neutral'>('neutral')
+  const [lessonData, setLessonData] = useState(sampleLesson)
+
+  const handleProgress = (newProgress: number) => {
+    setLessonData(prev => ({
+      ...prev,
+      progress: newProgress
+    }))
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 p-4">
+      {/* Header */}
+      <header className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          🎓 EmoTeach - Your Caring AI Learning Companion 💝
+        </h1>
+        <p className="text-gray-600 text-lg mb-4">
+           Learning that adapts to your emotions, celebrates your progress, and supports you every step of the way!
+        </p>
+      </header>
+
+      {/* Main Content - Split Screen Layout */}
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+          
+          {/* Left Side - Lesson Content (2/3 width on large screens) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* <LessonScreen 
+              currentLesson={lessonData}
+              emotion={currentEmotion}
+              onProgress={handleProgress}
+            /> */}
+          </div>
+
+          {/* Right Side - Webcam Test */}
+          <div className="space-y-6">
+            <WebcamFeed/>
+                    
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }
