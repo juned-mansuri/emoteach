@@ -208,22 +208,7 @@ export default function DemoPage() {
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-              <div className="space-y-2">
-                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                  Take Practice Quiz
-                </button>
-                <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                  View Progress Report
-                </button>
-                <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                  Adjust Settings
-                </button>
-              </div>
-            </div>
-
+    
             {/* Emotion Insights */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-fit">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Emotion Insights</h3>

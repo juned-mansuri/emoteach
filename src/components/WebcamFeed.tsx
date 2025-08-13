@@ -397,8 +397,8 @@ export default function WebcamFeed({ onEmotionChange }: WebcamFeedProps) {
               <div>Browser: {navigator.userAgent.split(' ')[0]}</div>
               <div>HTTPS: {window.location.protocol === 'https:' ? 'Yes' : 'No'}</div>
             </div>
-          </div>
-        </details>
+          </div>0
+        </details >
       </div>
     </div>
   )

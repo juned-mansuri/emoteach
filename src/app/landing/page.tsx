@@ -84,13 +84,14 @@ export default function LandingPage() {
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
               Experience the future of education with EmoTeach - an AI-powered platform that reads your emotions and adapts lessons in real-time for optimal learning outcomes.
             </p>
-           <HeroVideoDialog
+         <HeroVideoDialog
   className="block dark:hidden"
   animationStyle="from-center"
-  videoSrc="https://www.example.com/dummy-video"
-  thumbnailSrc="https://www.example.com/dummy-thumbnail.png"
-  thumbnailAlt="Dummy Video Thumbnail"
+  videoSrc="/covervid.gif"
+  thumbnailSrc="/covervid.gif"
+  thumbnailAlt="Cover Video Thumbnail"
 />
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="text-lg px-8 py-4 h-auto">
                 <Link href="/demo">

@@ -34,7 +34,7 @@ export function TextHighlight({
       />
       <span className="relative  bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent z-50">
         {children}
-      </span>
+      </span> 
     </span>
   )
 }
